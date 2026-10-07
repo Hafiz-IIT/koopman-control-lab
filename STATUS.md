@@ -1,0 +1,1 @@
+Implemented transparent polynomial lift with deterministic tests and CI. No learned operator or deployment claim.
