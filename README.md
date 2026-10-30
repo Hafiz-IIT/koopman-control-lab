@@ -3,6 +3,8 @@
 > **Research prototype:** transparent lifted-state control experiments inspired by Koopman representations.
 
 ## Research question
+
+<p align="center"><a href="https://github.com/Hafiz-IIT/koopman-control-lab/actions"><img src="https://img.shields.io/github/actions/workflow/status/Hafiz-IIT/koopman-control-lab/ci.yml?label=CI" alt="CI"/></a></p>
 Can a nonlinear state be represented in a lifted feature space where simple linear evolution/control models remain useful?
 
 ## Implemented
