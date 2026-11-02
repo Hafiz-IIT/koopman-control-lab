@@ -1,0 +1,1 @@
+Evaluate persistence, linear-in-state, and lifted EDMD-style baselines on declared synthetic maps. Use chronological train/test splits, fixed seeds, and held-out state ranges. Report one-step and multi-step RMSE, maximum absolute error, dictionary degree, ridge coefficient, sample count, and out-of-range degradation. Current status: protocol only; no benchmark result is claimed.
