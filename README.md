@@ -1,26 +1,32 @@
 # Koopman Control Lab
 
-> **Research prototype:** transparent lifted-state control experiments inspired by Koopman representations.
+An inspectable laboratory for fitting finite-dimensional lifted dynamics from scalar transition data. The implementation uses a monomial dictionary and ridge-regularized EDMD-style least squares.
 
 ## Research question
-
-<p align="center"><a href="https://github.com/Hafiz-IIT/koopman-control-lab/actions"><img src="https://img.shields.io/github/actions/workflow/status/Hafiz-IIT/koopman-control-lab/ci.yml?label=CI" alt="CI"/></a></p>
-Can a nonlinear state be represented in a lifted feature space where simple linear evolution/control models remain useful?
+When does a finite lifted linear model approximate nonlinear scalar dynamics, and how do dictionary degree, regularization, and data coverage affect prediction error?
 
 ## Implemented
-- transparent polynomial lifting
-- deterministic lifted-state representation
-- small control experiment suitable for inspection
-- reproducible tests
+- configurable monomial lifting: (x, x^2, ..., x^d)
+- regularized least-squares operator estimation
+- explicit operator convention and one-step prediction
+- multi-step lifted rollout
+- deterministic synthetic demonstration
+- validation for malformed inputs and singular systems
 
-## Quickstart
-```bash
-python demo.py
-python -m unittest discover -s tests -v
-```
+## Run
+    python demo.py
+    python -m unittest discover -s tests -v
 
-## Boundary
-This is a Koopman-inspired educational/research prototype. It is not a claim of an identified Koopman operator, optimality, or real-world deployment.
+## Model convention
+The fitted operator K is stored so that z_next[j] = sum_i z[i] * K[i][j]. It is a finite-dimensional approximation learned from paired observations, not proof of an invariant Koopman subspace.
 
-Related: [Safe RL Action Gate](https://github.com/Hafiz-IIT/safe-rl-action-gate)
-\n\n## Example and evidence boundary\n\nThe `demo.py` path is the primary runnable example, while `tests/` captures the deterministic implementation contract.\n\n## Results and limitations\n\nThe current artifact demonstrates a transparent polynomial lifting workflow. It does **not** identify or learn a Koopman operator, establish optimality, or validate a physical control system. Results should therefore be interpreted as controlled prototype behavior rather than empirical claims about nonlinear control generally.\n\n## Companion manuscript\n\nSee [Koopman Control — Research Manuscript](https://github.com/Hafiz-IIT/koopman-control-paper) for the manuscript companion.\n
+## Scope
+Scalar synthetic-data prototype only. It is not a robot controller, validated physical model, stability proof, or state-of-the-art claim. No hardware was tested.
+
+## Related work
+- [Safe RL Action Gate](https://github.com/Hafiz-IIT/safe-rl-action-gate)
+- [Residual RL with Linear Priors](https://github.com/Hafiz-IIT/residual-rl-linear-priors)
+- [Hybrid LQR + RL Control](https://github.com/Hafiz-IIT/hybrid-lqr-rl-control)
+- [Companion manuscript](https://github.com/Hafiz-IIT/koopman-control-paper)
+
+See [EVALUATION.md](EVALUATION.md) for the proposed benchmark protocol.
