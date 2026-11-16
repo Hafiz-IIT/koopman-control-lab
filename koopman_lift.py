@@ -27,6 +27,19 @@ def _validate_operator(operator: Sequence[Sequence[float]]) -> int:
     return dimension
 
 
+def _apply_operator(
+    lifted_state: Sequence[float],
+    operator: Sequence[Sequence[float]],
+) -> tuple[float, ...]:
+    dimension = _validate_operator(operator)
+    if len(lifted_state) != dimension:
+        raise ValueError("lifted state dimension must match operator")
+    return tuple(
+        sum(lifted_state[i] * operator[i][j] for i in range(dimension))
+        for j in range(dimension)
+    )
+
+
 def _solve(matrix: list[list[float]], rhs: list[float]) -> list[float]:
     """Solve a small dense system using partial-pivot Gaussian elimination."""
     n = len(rhs)
@@ -94,11 +107,7 @@ def predict_lifted(
 ) -> tuple[float, ...]:
     """Apply a fitted operator once and return the predicted lifted state."""
     dimension = _validate_operator(operator)
-    z = lift(state, dimension - 1)
-    return tuple(
-        sum(z[i] * operator[i][j] for i in range(dimension))
-        for j in range(dimension)
-    )
+    return _apply_operator(lift(state, dimension - 1), operator)
 
 
 def predict_state(state: float, operator: Sequence[Sequence[float]]) -> float:
@@ -111,13 +120,17 @@ def rollout(
     operator: Sequence[Sequence[float]],
     steps: int,
 ) -> list[tuple[float, ...]]:
-    """Return lifted predictions; the first element is the initial lift."""
+    """Iterate the learned linear operator in lifted space.
+
+    After the first step, predictions are not projected back onto the nonlinear
+    image of the lifting map. This is the standard linear lifted rollout.
+    """
     dimension = _validate_operator(operator)
     if not isinstance(steps, int) or steps < 0:
         raise ValueError("steps must be a non-negative integer")
     trajectory = [lift(state, dimension - 1)]
     for _ in range(steps):
-        trajectory.append(predict_lifted(trajectory[-1][1], operator))
+        trajectory.append(_apply_operator(trajectory[-1], operator))
     return trajectory
 
 
