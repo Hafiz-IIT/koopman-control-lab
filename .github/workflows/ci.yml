@@ -5,19 +5,33 @@ on:
 permissions:
   contents: read
 jobs:
-  test:
+  test-and-experiment:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Run deterministic tests
+      - name: Run deterministic unit tests
         id: tests
         run: python -m unittest discover -s tests -v
       - name: Run documented demo
         id: demo
         run: python demo.py
-      - name: Fail workflow when verification fails
-        if: steps.tests.outcome != 'success' || steps.demo.outcome != 'success'
+      - name: Execute fixed-seed scalar EDMD benchmark
+        id: experiment
+        run: python experiment.py
+      - name: Upload per-seed and aggregate experiment outputs
+        if: steps.experiment.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: koopman-scalar-benchmark
+          path: |
+            results/koopman_scalar_per_seed.csv
+            results/koopman_scalar_summary.csv
+            results/manifest.json
+          if-no-files-found: error
+          retention-days: 90
+      - name: Fail workflow when tests, demo, or experiment fail
+        if: steps.tests.outcome != 'success' || steps.demo.outcome != 'success' || steps.experiment.outcome != 'success'
         run: exit 1
