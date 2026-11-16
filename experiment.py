@@ -199,8 +199,20 @@ def main() -> None:
     manifest_path = RESULTS / "manifest.json"
 
     write_csv(raw_path, raw_rows, RAW_FIELDS)
-    summary_fields = tuple(summary_rows[0].keys())
-    write_csv(summary_path, summary_rows, summary_fields)
+    summary_fields = (
+        "system", "method", "degree", "n_seeds",
+        "one_step_rmse_mean", "one_step_rmse_sd",
+        "one_step_rmse_ci95_low", "one_step_rmse_ci95_high",
+        "ood_one_step_rmse_mean", "ood_one_step_rmse_sd",
+        "ood_one_step_rmse_ci95_low", "ood_one_step_rmse_ci95_high",
+        "rollout_rmse_20_mean", "rollout_rmse_20_sd",
+        "rollout_rmse_20_ci95_low", "rollout_rmse_20_ci95_high",
+    )
+    compact_summary = [
+        {field: row[field] for field in summary_fields}
+        for row in summary_rows
+    ]
+    write_csv(summary_path, compact_summary, summary_fields)
 
     manifest = {
         "study": "scalar_edmd_prediction_benchmark",
