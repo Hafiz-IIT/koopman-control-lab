@@ -1,0 +1,37 @@
+{
+  "study": "scalar_edmd_prediction_benchmark",
+  "version": "0.1",
+  "status": "completed",
+  "results_available": true,
+  "seed_values": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+  "systems": [
+    "cubic_contraction",
+    "sinusoidal_contraction",
+    "tanh_contraction",
+    "quadratic_affine_contraction",
+    "piecewise_regime_shift"
+  ],
+  "methods": ["persistence", "affine_linear", "edmd_degree_2", "edmd_degree_3"],
+  "configuration": {
+    "train_transitions_per_seed": 600,
+    "test_transitions_per_seed": 300,
+    "ood_transitions_per_seed": 300,
+    "rollout_trajectories_per_seed": 100,
+    "rollout_horizon": 20,
+    "training_state_range": [-1.0, 1.0],
+    "ood_state_range": [-1.5, 1.5],
+    "ridge": 1e-8,
+    "ridge_selection": "fixed before test evaluation; no test tuning",
+    "confidence_interval": "two-sided 95% t interval across 10 seeds (df=9)"
+  },
+  "output_files": [
+    "koopman_scalar_per_seed.csv",
+    "koopman_scalar_summary.csv"
+  ],
+  "limitations": [
+    "Scalar synthetic systems only; no physical-system validation.",
+    "Finite polynomial dictionaries are approximations, not invariant-subspace proofs.",
+    "Prediction accuracy does not establish control or MPC utility.",
+    "Multi-step lifted states are not projected back onto the nonlinear lifting manifold."
+  ]
+}
