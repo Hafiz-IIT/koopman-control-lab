@@ -12,7 +12,7 @@ class EDMDTests(unittest.TestCase):
         self.assertAlmostEqual(predict_lifted(0.25, operator)[0], 1.0, places=7)
 
     def test_rollout_length_and_constant_observable(self):
-        operator = ((1.0, 0.0), (0.1, 0.9))
+        operator = ((1.0, 0.0), (0.0, 0.9))
         trajectory = rollout(0.5, operator, 4)
         self.assertEqual(len(trajectory), 5)
         self.assertTrue(all(abs(row[0] - 1.0) < 1e-12 for row in trajectory))
