@@ -28,6 +28,10 @@
     "koopman_scalar_per_seed.csv",
     "koopman_scalar_summary.csv"
   ],
+  "output_sha256": {
+    "koopman_scalar_per_seed.csv": "5e2e4291e012b6e9df652f7d4b68f2074ca6da6444b9dd84e9014f56be48a453",
+    "koopman_scalar_summary.csv": "a52b5a9a41b710b5b8a1f8f7011740430a43a3d289048f261e533c06ac972b3b"
+  },
   "limitations": [
     "Scalar synthetic systems only; no physical-system validation.",
     "Finite polynomial dictionaries are approximations, not invariant-subspace proofs.",
