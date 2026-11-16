@@ -6,6 +6,7 @@ The script writes per-seed results, aggregate statistics, and a JSON manifest.
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 import math
 import random
@@ -214,6 +215,11 @@ def main() -> None:
     ]
     write_csv(summary_path, compact_summary, summary_fields)
 
+    output_hashes = {
+        raw_path.name: hashlib.sha256(raw_path.read_bytes()).hexdigest(),
+        summary_path.name: hashlib.sha256(summary_path.read_bytes()).hexdigest(),
+    }
+
     manifest = {
         "study": "scalar_edmd_prediction_benchmark",
         "version": "0.1",
@@ -235,6 +241,7 @@ def main() -> None:
             "confidence_interval": "two-sided 95% t interval across 10 seeds (df=9)",
         },
         "output_files": [raw_path.name, summary_path.name],
+        "output_sha256": output_hashes,
         "limitations": [
             "Scalar synthetic systems only; no physical-system validation.",
             "Finite polynomial dictionaries are approximations, not invariant-subspace proofs.",
