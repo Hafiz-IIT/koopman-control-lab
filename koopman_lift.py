@@ -44,10 +44,13 @@ def _apply_operator(
         raise ValueError("lifted state dimension must match operator")
     for value in lifted_state:
         _finite("lifted state value", value)
-    return tuple(
+    result = tuple(
         sum(lifted_state[i] * operator[i][j] for i in range(dimension))
         for j in range(dimension)
     )
+    for value in result:
+        _finite("operator output", value)
+    return result
 
 
 def _solve(matrix: list[list[float]], rhs: list[float]) -> list[float]:
