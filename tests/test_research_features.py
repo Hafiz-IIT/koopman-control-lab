@@ -29,6 +29,12 @@ class EDMDTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             predict_lifted(0.5, ((1.0, 0.0), (0.1,)))
 
+    def test_finite_state_that_overflows_polynomial_lift_is_rejected(self):
+        with self.assertRaises(OverflowError):
+            lift(1e200, degree=2)
+        with self.assertRaises(OverflowError):
+            fit_edmd([1e200, 1e200, 1e200], [1.0, 2.0, 3.0], degree=2)
+
     def test_nonfinite_training_data_rejected(self):
         with self.assertRaises(ValueError):
             fit_edmd([0.1, float("nan"), 0.3], [0.2, 0.3, 0.4], degree=1)
