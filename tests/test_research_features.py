@@ -29,6 +29,20 @@ class EDMDTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             predict_lifted(0.5, ((1.0, 0.0), (0.1,)))
 
+    def test_nonfinite_training_data_rejected(self):
+        with self.assertRaises(ValueError):
+            fit_edmd([0.1, float("nan"), 0.3], [0.2, 0.3, 0.4], degree=1)
+
+    def test_boolean_degree_and_fractional_steps_rejected(self):
+        with self.assertRaises(ValueError):
+            lift(1.0, True)
+        with self.assertRaises(ValueError):
+            rollout(0.5, ((1.0, 0.0), (0.0, 0.9)), 1.5)
+
+    def test_nonfinite_operator_rejected(self):
+        with self.assertRaises(ValueError):
+            predict_lifted(0.5, ((1.0, 0.0), (0.0, float("nan"))))
+
     def test_negative_ridge_rejected(self):
         with self.assertRaises(ValueError):
             fit_edmd([0.1, 0.2, 0.3], [0.2, 0.3, 0.4], degree=1, ridge=-1.0)
