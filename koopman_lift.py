@@ -26,7 +26,16 @@ def lift(x: float, degree: int = 3) -> tuple[float, ...]:
     x = _finite("state", x)
     if isinstance(degree, bool) or not isinstance(degree, int) or degree < 1:
         raise ValueError("degree must be an integer >= 1")
-    return (1.0,) + tuple(x ** power for power in range(1, degree + 1))
+    features = [1.0]
+    for power in range(1, degree + 1):
+        try:
+            feature = x ** power
+        except OverflowError as exc:
+            raise OverflowError(f"polynomial lift overflowed at degree {power}") from exc
+        if not math.isfinite(feature):
+            raise OverflowError(f"polynomial lift is non-finite at degree {power}")
+        features.append(feature)
+    return tuple(features)
 
 
 def _validate_operator(operator: Sequence[Sequence[float]]) -> int:
