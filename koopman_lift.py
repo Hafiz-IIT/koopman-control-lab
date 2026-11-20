@@ -10,9 +10,15 @@ from collections.abc import Sequence
 
 
 def _finite(name: str, value: float) -> float:
-    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise ValueError(f"{name} must be a finite number")
-    return float(value)
+    try:
+        normalized = float(value)
+    except (OverflowError, TypeError, ValueError) as exc:
+        raise ValueError(f"{name} must be a finite number") from exc
+    if not math.isfinite(normalized):
+        raise ValueError(f"{name} must be a finite number")
+    return normalized
 
 
 def lift(x: float, degree: int = 3) -> tuple[float, ...]:
