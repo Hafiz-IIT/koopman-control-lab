@@ -41,7 +41,7 @@ class EDMDTests(unittest.TestCase):
 
     def test_operator_overflow_rejected(self):
         with self.assertRaises(ValueError):
-            predict_lifted(2.0, ((1e308, 0.0), (0.0, 1.0)))
+            predict_lifted(2.0, ((0.0, 0.0), (1e308, 0.0)))
 
     def test_nonfinite_operator_rejected(self):
         with self.assertRaises(ValueError):
