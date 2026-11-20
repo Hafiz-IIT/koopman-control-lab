@@ -43,6 +43,13 @@ class EDMDTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             predict_lifted(2.0, ((0.0, 0.0), (1e308, 0.0)))
 
+    def test_extremely_large_integer_inputs_fail_cleanly(self):
+        huge = 10 ** 10000
+        with self.assertRaises(ValueError):
+            lift(huge, degree=1)
+        with self.assertRaises(ValueError):
+            predict_lifted(0.5, ((1.0, 0.0), (0.0, huge)))
+
     def test_nonfinite_operator_rejected(self):
         with self.assertRaises(ValueError):
             predict_lifted(0.5, ((1.0, 0.0), (0.0, float("nan"))))
