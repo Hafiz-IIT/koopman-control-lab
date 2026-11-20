@@ -9,21 +9,44 @@ import math
 from collections.abc import Sequence
 
 
+def _finite(name: str, value: float) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"{name} must be a finite number")
+    try:
+        normalized = float(value)
+    except (OverflowError, TypeError, ValueError) as exc:
+        raise ValueError(f"{name} must be a finite number") from exc
+    if not math.isfinite(normalized):
+        raise ValueError(f"{name} must be a finite number")
+    return normalized
+
+
 def lift(x: float, degree: int = 3) -> tuple[float, ...]:
     """Return the dictionary (1, x, x², ..., x**degree)."""
-    if not math.isfinite(x):
-        raise ValueError("state must be finite")
-    if not isinstance(degree, int) or degree < 1:
+    x = _finite("state", x)
+    if isinstance(degree, bool) or not isinstance(degree, int) or degree < 1:
         raise ValueError("degree must be an integer >= 1")
-    return (1.0,) + tuple(x ** power for power in range(1, degree + 1))
+    features = [1.0]
+    for power in range(1, degree + 1):
+        try:
+            feature = x ** power
+        except OverflowError as exc:
+            raise OverflowError(f"polynomial lift overflowed at degree {power}") from exc
+        if not math.isfinite(feature):
+            raise OverflowError(f"polynomial lift is non-finite at degree {power}")
+        features.append(feature)
+    return tuple(features)
 
 
 def _validate_operator(operator: Sequence[Sequence[float]]) -> int:
+    if not isinstance(operator, Sequence) or isinstance(operator, (str, bytes)):
+        raise ValueError("operator must be a square numeric sequence")
     dimension = len(operator)
-    if dimension < 2 or any(len(row) != dimension for row in operator):
+    if dimension < 2 or any(not isinstance(row, Sequence) or len(row) != dimension for row in operator):
         raise ValueError("operator must be a non-empty square matrix for a degree >= 1 lift")
-    if not all(math.isfinite(value) for row in operator for value in row):
-        raise ValueError("operator values must be finite")
+    for row in operator:
+        for value in row:
+            _finite("operator value", value)
     return dimension
 
 
@@ -32,19 +55,31 @@ def _apply_operator(
     operator: Sequence[Sequence[float]],
 ) -> tuple[float, ...]:
     dimension = _validate_operator(operator)
-    if len(lifted_state) != dimension:
+    if not isinstance(lifted_state, Sequence) or len(lifted_state) != dimension:
         raise ValueError("lifted state dimension must match operator")
-    return tuple(
+    for value in lifted_state:
+        _finite("lifted state value", value)
+    result = tuple(
         sum(lifted_state[i] * operator[i][j] for i in range(dimension))
         for j in range(dimension)
     )
+    for value in result:
+        _finite("operator output", value)
+    return result
 
 
 def _solve(matrix: list[list[float]], rhs: list[float]) -> list[float]:
     """Solve a small dense system using partial-pivot Gaussian elimination."""
+    if not isinstance(rhs, Sequence) or not isinstance(matrix, Sequence):
+        raise ValueError("matrix and rhs must be sequences")
     n = len(rhs)
-    if len(matrix) != n or any(len(row) != n for row in matrix):
+    if n < 1 or len(matrix) != n or any(not isinstance(row, Sequence) or len(row) != n for row in matrix):
         raise ValueError("matrix must be square and match rhs")
+    for value in rhs:
+        _finite("rhs value", value)
+    for row in matrix:
+        for value in row:
+            _finite("matrix value", value)
     a = [row[:] + [rhs[i]] for i, row in enumerate(matrix)]
     for col in range(n):
         pivot = max(range(col, n), key=lambda row: abs(a[row][col]))
@@ -58,7 +93,10 @@ def _solve(matrix: list[list[float]], rhs: list[float]) -> list[float]:
                 continue
             factor = a[row][col]
             a[row] = [left - factor * right for left, right in zip(a[row], a[col])]
-    return [a[index][-1] for index in range(n)]
+    solution = [a[index][-1] for index in range(n)]
+    for value in solution:
+        _finite("solution value", value)
+    return solution
 
 
 def fit_edmd(
@@ -71,12 +109,17 @@ def fit_edmd(
 
     The constant observable is included and is not ridge-penalized.
     """
-    if not isinstance(degree, int) or degree < 1:
+    if isinstance(degree, bool) or not isinstance(degree, int) or degree < 1:
         raise ValueError("degree must be an integer >= 1")
+    if not isinstance(states, Sequence) or not isinstance(next_states, Sequence):
+        raise ValueError("states and next_states must be sequences")
     dimension = degree + 1
     if len(states) != len(next_states) or len(states) < dimension:
         raise ValueError("paired data must contain at least degree + 1 transitions")
-    if not math.isfinite(ridge) or ridge < 0:
+    for value in list(states) + list(next_states):
+        _finite("training state", value)
+    ridge = _finite("ridge", ridge)
+    if ridge < 0:
         raise ValueError("ridge must be finite and non-negative")
 
     pairs = [(lift(x, degree), lift(y, degree)) for x, y in zip(states, next_states)]
@@ -126,7 +169,7 @@ def rollout(
     image of the lifting map. This is the standard linear lifted rollout.
     """
     dimension = _validate_operator(operator)
-    if not isinstance(steps, int) or steps < 0:
+    if isinstance(steps, bool) or not isinstance(steps, int) or steps < 0:
         raise ValueError("steps must be a non-negative integer")
     trajectory = [lift(state, dimension - 1)]
     for _ in range(steps):
@@ -136,6 +179,11 @@ def rollout(
 
 def linear_step(z: tuple[float, ...], rate: float = 0.9) -> tuple[float, ...]:
     """Known stable linear map used only for a controlled demo."""
-    if not math.isfinite(rate) or not 0 <= rate <= 1:
-        raise ValueError("rate must be finite and in [0, 1]")
+    rate = _finite("rate", rate)
+    if not 0 <= rate <= 1:
+        raise ValueError("rate must be in [0, 1]")
+    if not isinstance(z, Sequence) or not z:
+        raise ValueError("z must be a non-empty sequence")
+    for value in z:
+        _finite("lifted value", value)
     return tuple(rate * value for value in z)
